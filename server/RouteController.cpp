@@ -786,6 +786,24 @@ int RouteController::configureDummyNetwork() {
     return 0;
 }
 
+#ifdef NEEDS_NETD_DIRECT_CONNECT_RULE
+// Add a new rule to look up the 'main' table, with the same selectors as the "default network"
+// rule, but with a lower priority. We will never create routes in the main table; it should only be
+// used for directly-connected routes implicitly created by the kernel when adding IP addresses.
+// This is necessary, for example, when adding a route through a directly-connected gateway: in
+// order to add the route, there must already be a directly-connected route that covers the gateway.
+[[nodiscard]] int addDirectlyConnectedRule() {
+    Fwmark fwmark;
+    Fwmark mask;
+
+    fwmark.netId = NETID_UNSET;
+    mask.netId = FWMARK_NET_ID_MASK;
+
+    return modifyIpRule(RTM_NEWRULE, RULE_PRIORITY_DIRECTLY_CONNECTED, RT_TABLE_MAIN,
+                        fwmark.intValue, mask.intValue, IIF_NONE, OIF_NONE, UID_ROOT, UID_ROOT);
+}
+#endif
+
 // Add an explicit unreachable rule close to the end of the prioriy list to make it clear that
 // relying on the kernel-default "from all lookup main" rule at priority 32766 is not intended
 // behaviour. We do flush the kernel-default rules at startup, but having an explicit unreachable
@@ -1272,6 +1290,11 @@ int RouteController::Init(unsigned localNetId) {
     if (int ret = addLocalNetworkRules(localNetId)) {
         return ret;
     }
+#ifdef NEEDS_NETD_DIRECT_CONNECT_RULE
+    if (int ret = addDirectlyConnectedRule()) {
+        return ret;
+    }
+#endif
     if (int ret = addUnreachableRule()) {
         return ret;
     }
