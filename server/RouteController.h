@@ -83,6 +83,9 @@ constexpr int32_t RULE_PRIORITY_UID_DEFAULT_NETWORK               = 29000;
 constexpr int32_t RULE_PRIORITY_UID_DEFAULT_UNREACHABLE           = 30000;
 constexpr int32_t RULE_PRIORITY_DEFAULT_NETWORK                   = 31000;
 constexpr int32_t RULE_PRIORITY_UNREACHABLE                       = 32000;
+#ifdef NEEDS_NETD_DIRECT_CONNECT_RULE
+const uint32_t RULE_PRIORITY_DIRECTLY_CONNECTED      = 30000;
+#endif
 // clang-format on
 
 static const char* V4_FIXED_LOCAL_PREFIXES[] = {

@@ -40,6 +40,7 @@ cc_library_static {
     defaults: [
         "netd_aidl_interface_lateststable_cpp_shared",
         "netd_defaults",
+        "needs_netd_direct_connect_rule_defaults",
     ],
     include_dirs: [
         "system/netd/include",
